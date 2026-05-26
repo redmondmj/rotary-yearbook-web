@@ -2,13 +2,13 @@
 
 :root {
   /* HSL Tailored Colors - Light Mode (Premium Navy & Gold) */
-  --primary-hue: 215;
-  --primary-sat: 60%;
-  --primary-light: 18%;
+  --primary-hue: 218;
+  --primary-sat: 72%;
+  --primary-light: 33%;
   
-  --accent-hue: 43;
-  --accent-sat: 75%;
-  --accent-light: 50%;
+  --accent-hue: 38;
+  --accent-sat: 93%;
+  --accent-light: 54%;
   
   --bg-primary: HSL(210, 20%, 98%);
   --bg-secondary: HSL(0, 0%, 100%);

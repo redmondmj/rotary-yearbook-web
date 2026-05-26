@@ -1,67 +1,58 @@
 import React, { useState } from 'react';
-import { Search, Award, Star, Mail, ExternalLink, ArrowRight } from 'lucide-react';
+import { Search, Award, Star, Mail, ExternalLink, ArrowRight, LayoutGrid, Phone, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { sponsorsData } from '../data/sponsors';
 
-// High-end sample local businesses categorized by tier
-const sampleSponsors = [
-  { id: 1, name: 'Truro Toyota', category: 'Automotive', tier: 'gold', phone: '(902) 895-9000', email: 'sales@trurotoyota.ca', url: 'https://www.trurotoyota.ca' },
-  { id: 2, name: 'Rath Eastlink Community Centre', category: 'Recreation', tier: 'gold', phone: '(902) 897-3000', email: 'info@ratheastlinkcc.ca', url: 'https://www.ratheastlinkcc.ca' },
-  { id: 3, name: 'Colchester Dental Group', category: 'Health & Wellness', tier: 'gold', phone: '(902) 895-1555', email: 'reception@colchesterdental.ca', url: 'https://www.colchesterdental.ca' },
-  { id: 4, name: 'Caldwell Roach Insurance', category: 'Financial & Legal', tier: 'silver', phone: '(902) 893-4204', email: 'info@caldwellroach.com', url: 'https://www.caldwellroach.com' },
-  { id: 5, name: 'MacQuarries Pharmasave', category: 'Health & Wellness', tier: 'silver', phone: '(902) 895-1681', email: 'contact@macquarries.ca', url: 'https://macquarries.ca' },
-  { id: 6, name: 'Masstown Market', category: 'Retail & Dining', tier: 'silver', phone: '(902) 662-2816', email: 'info@masstownmarket.com', url: 'https://masstownmarket.com' },
-  { id: 7, name: 'Stanfields Ltd.', category: 'Retail & Dining', tier: 'bronze', phone: '(902) 895-5406', email: 'service@stanfields.com', url: 'https://www.stanfields.com' },
-  { id: 8, name: 'Patterson Law', category: 'Financial & Legal', tier: 'bronze', phone: '(902) 897-2000', email: 'truro@pattersonlaw.ca', url: 'https://www.pattersonlaw.ca' },
-  { id: 9, name: 'Truro Sanitation Ltd.', category: 'Services', tier: 'bronze', phone: '(902) 895-2089', email: 'info@trurosanitation.ca', url: '#' }
-];
-
-const categories = ['All', 'Automotive', 'Recreation', 'Health & Wellness', 'Financial & Legal', 'Retail & Dining', 'Services'];
+const adSizes = ['All', 'A Full Page', '1/3 of a Page', '1/6 of a Page'];
 
 export default function Sponsors() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedSize, setSelectedSize] = useState('All');
 
-  const filteredSponsors = sampleSponsors.filter((sponsor) => {
-    const matchesSearch = sponsor.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          sponsor.category.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || sponsor.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+  const filteredSponsors = sponsorsData.filter((sponsor) => {
+    const nameMatch = sponsor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      sponsor.printName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      (sponsor.address && sponsor.address.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const sizeMatch = selectedSize === 'All' || sponsor.adSize === selectedSize;
+    
+    return nameMatch && sizeMatch;
   });
 
-  const getTierBadge = (tier) => {
-    switch (tier) {
-      case 'gold':
+  const getAdSizeBadge = (adSize) => {
+    switch (adSize) {
+      case 'A Full Page':
         return (
           <span style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '4px',
-            backgroundColor: '#fef3c7',
-            color: '#d97706',
+            backgroundColor: 'var(--color-accent-glow)',
+            color: 'var(--color-accent)',
             fontSize: '0.75rem',
             fontWeight: '700',
-            padding: '3px 8px',
+            padding: '4px 10px',
             borderRadius: '50px',
-            border: '1px solid #fde68a'
+            border: '1px solid rgba(212, 175, 55, 0.4)'
           }}>
-            <Award size={12} /> GOLD SPONSOR
+            <Award size={12} /> FULL PAGE AD
           </span>
         );
-      case 'silver':
+      case '1/3 of a Page':
         return (
           <span style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '4px',
-            backgroundColor: '#f3f4f6',
-            color: '#4b5563',
+            backgroundColor: 'rgba(23, 69, 143, 0.1)',
+            color: 'var(--color-primary)',
             fontSize: '0.75rem',
             fontWeight: '700',
-            padding: '3px 8px',
+            padding: '4px 10px',
             borderRadius: '50px',
-            border: '1px solid #e5e7eb'
+            border: '1px solid rgba(23, 69, 143, 0.2)'
           }}>
-            <Star size={12} /> SILVER SPONSOR
+            <Star size={12} /> 1/3 PAGE AD
           </span>
         );
       default:
@@ -70,32 +61,39 @@ export default function Sponsors() {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '4px',
-            backgroundColor: '#eff6ff',
-            color: '#1d4ed8',
+            backgroundColor: 'var(--border-color)',
+            color: 'var(--text-secondary)',
             fontSize: '0.75rem',
-            fontWeight: '700',
-            padding: '3px 8px',
+            fontWeight: '600',
+            padding: '4px 10px',
             borderRadius: '50px',
-            border: '1px solid #dbeafe'
+            border: '1px solid var(--border-color)'
           }}>
-            BRONZE SPONSOR
+            1/6 PAGE AD
           </span>
         );
     }
   };
 
+  // Helper to format website links nicely
+  const formatUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return `https://${url}`;
+  };
+
   return (
     <div className="sponsors-page animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '48px' }}>
       
-      {/* Title */}
+      {/* Page Header */}
       <div style={{ textAlign: 'center' }}>
-        <h1 style={{ marginBottom: '16px' }}>Corporate <span className="text-gradient">Sponsors</span></h1>
+        <h1 style={{ marginBottom: '16px' }}>2026 Directory & <span className="text-gradient">Sponsors</span></h1>
         <p style={{ color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto', fontSize: '1.1rem' }}>
-          We are deeply grateful to the local businesses whose advertising sponsorships make our community service possible.
+          Explore the business directory and support our local sponsors. Click to contact them directly or visit their websites.
         </p>
       </div>
 
-      {/* Grid Controls (Search & Category filters) */}
+      {/* Grid Controls (Search & Ad Size filters) */}
       <div style={{
         display: 'flex',
         flexWrap: 'wrap',
@@ -119,7 +117,7 @@ export default function Sponsors() {
           }} />
           <input
             type="text"
-            placeholder="Search businesses..."
+            placeholder="Search sponsors or locations..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
@@ -136,67 +134,107 @@ export default function Sponsors() {
           />
         </div>
 
-        {/* Categories */}
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {categories.map((cat) => (
+        {/* Ad Size Filter */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginRight: '8px', fontWeight: '500' }}>
+            Filter by Size:
+          </span>
+          {adSizes.map((size) => (
             <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
+              key={size}
+              onClick={() => setSelectedSize(size)}
               className="btn"
               style={{
                 padding: '6px 14px',
                 fontSize: '0.85rem',
-                backgroundColor: selectedCategory === cat ? 'var(--color-primary)' : 'transparent',
-                color: selectedCategory === cat ? 'var(--bg-secondary)' : 'var(--text-secondary)',
-                border: selectedCategory === cat ? 'none' : '1px solid var(--border-color)'
+                backgroundColor: selectedSize === size ? 'var(--color-primary)' : 'transparent',
+                color: selectedSize === size ? 'var(--bg-secondary)' : 'var(--text-secondary)',
+                border: selectedSize === size ? 'none' : '1px solid var(--border-color)'
               }}
             >
-              {cat}
+              {size === 'All' ? 'Show All' : size.replace(' of a Page', '').replace('A ', '')}
             </button>
           ))}
         </div>
       </div>
 
       {/* Directory Grid */}
-      <div className="grid-container" style={{ marginTop: 0 }}>
-        {filteredSponsors.map((sponsor) => (
-          <div key={sponsor.id} className="card" style={{ padding: '24px', gap: '16px', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div>{getTierBadge(sponsor.tier)}</div>
-              <h3 style={{ fontSize: '1.25rem', marginTop: '4px' }}>{sponsor.name}</h3>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: '600' }}>
-                {sponsor.category}
-              </span>
-            </div>
-            
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '6px',
-              fontSize: '0.85rem',
-              color: 'var(--text-secondary)',
-              borderTop: '1px solid var(--border-color)',
-              paddingTop: '12px'
-            }}>
-              <div>Phone: <span style={{ color: 'var(--text-primary)', fontWeight: '500' }}>{sponsor.phone}</span></div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                Email: <a href={`mailto:${sponsor.email}`} style={{ color: 'var(--color-accent)', fontWeight: '500' }}>{sponsor.email}</a>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+          Showing {filteredSponsors.length} sponsors
+        </div>
+        
+        <div className="grid-container" style={{ marginTop: 0 }}>
+          {filteredSponsors.map((sponsor, index) => (
+            <div 
+              key={`${sponsor.name}-${index}`} 
+              className="card glow-effect" 
+              style={{ 
+                padding: '24px', 
+                gap: '16px', 
+                justifyContent: 'space-between',
+                border: sponsor.adSize === 'A Full Page' ? '2px solid var(--color-accent)' : '1px solid var(--border-color)'
+              }}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div>{getAdSizeBadge(sponsor.adSize)}</div>
+                <h3 style={{ fontSize: '1.2rem', marginTop: '4px', lineHeight: '1.3' }}>{sponsor.printName}</h3>
+                {sponsor.name !== sponsor.printName && (
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    Registered: {sponsor.name}
+                  </span>
+                )}
               </div>
-            </div>
+              
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                fontSize: '0.85rem',
+                color: 'var(--text-secondary)',
+                borderTop: '1px solid var(--border-color)',
+                paddingTop: '12px'
+              }}>
+                {sponsor.address && (
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-start' }}>
+                    <MapPin size={14} style={{ flexShrink: 0, marginTop: '2px' }} />
+                    <span>{sponsor.address}</span>
+                  </div>
+                )}
+                
+                {sponsor.phone && (
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    <Phone size={14} style={{ flexShrink: 0 }} />
+                    <a href={`tel:${sponsor.phone}`} style={{ color: 'var(--text-primary)' }}>
+                      {sponsor.phone}
+                    </a>
+                  </div>
+                )}
 
-            {sponsor.url !== '#' && (
-              <a
-                href={sponsor.url}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="btn btn-outline"
-                style={{ padding: '8px', fontSize: '0.8rem', width: '100%', gap: '6px' }}
-              >
-                Visit Website <ExternalLink size={12} />
-              </a>
-            )}
-          </div>
-        ))}
+                {sponsor.email && (
+                  <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                    <Mail size={14} style={{ flexShrink: 0 }} />
+                    <a href={`mailto:${sponsor.email}`} style={{ color: 'var(--color-primary)', wordBreak: 'break-all' }}>
+                      {sponsor.email}
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              {sponsor.url && (
+                <a
+                  href={formatUrl(sponsor.url)}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="btn btn-outline"
+                  style={{ padding: '8px', fontSize: '0.8rem', width: '100%', gap: '6px', marginTop: '4px' }}
+                >
+                  Visit Website <ExternalLink size={12} />
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Sponsor Banner CTA */}
@@ -209,7 +247,7 @@ export default function Sponsors() {
         gap: '16px',
         borderLeft: '4px solid var(--color-accent)'
       }}>
-        <h2>Become a Sponsor</h2>
+        <h2>Advertise in the 2026 Edition</h2>
         <p style={{ maxWidth: '600px', color: 'var(--text-secondary)', fontSize: '1rem' }}>
           Connect your business with our community of readers. We offer multiple ad sizes, printed distribution, and online landing directory listings.
         </p>

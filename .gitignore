@@ -26,4 +26,6 @@ dist-ssr
 # WordPress and DB backups
 *.sql
 _wordpress_backup/
+AdData2026.csv
+
 

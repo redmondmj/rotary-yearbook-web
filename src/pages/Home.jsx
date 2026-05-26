@@ -133,13 +133,13 @@ export default function Home() {
           <div style={{ color: 'var(--color-accent)', fontWeight: '600', fontSize: '0.9rem', letterSpacing: '1px', textTransform: 'uppercase' }}>
             Featured Publication
           </div>
-          <h2>2025 Digital Yearbook</h2>
+          <h2>2026 Digital Yearbook (Proof)</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem' }}>
-            Explore our latest volume online. Our 2025 Yearbook highlights a banner year of community support, local directory listings, and memorable pictures from around our area.
+            Explore our latest volume online. Our 2026 Yearbook highlights a banner year of community support, local directory listings, and memorable pictures from around our area.
           </p>
           <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
-            <Link to="/yearbooks/49" className="btn btn-primary glow-effect">
-              Open 2025 Book <BookOpen size={16} />
+            <Link to="/yearbooks/50" className="btn btn-primary glow-effect">
+              Open 2026 Book <BookOpen size={16} />
             </Link>
           </div>
         </div>
@@ -206,7 +206,7 @@ export default function Home() {
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>TRURO CHAPTER</div>
-                <div style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--color-accent)' }}>2025</div>
+                <div style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--color-accent)' }}>2026</div>
               </div>
             </div>
           </div>

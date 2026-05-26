@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
-import { ChevronLeft, ChevronRight, Maximize2, FileText, Loader2, BookOpen, Layers } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Maximize2, FileText, Loader2, BookOpen, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
-// Set up the PDF.js worker using a standard CDN version that matches the installed package.
-// We use a fallback version to ensure the worker loads reliably.
+// Set up the PDF.js worker using a standard CDN version.
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js`;
 
 export default function YearbookViewer({ yearbook }) {
@@ -12,6 +11,7 @@ export default function YearbookViewer({ yearbook }) {
   const [isSpread, setIsSpread] = useState(true);
   const [loading, setLoading] = useState(true);
   const [pdfDoc, setPdfDoc] = useState(null);
+  const [zoomScale, setZoomScale] = useState(1.0);
   
   const leftCanvasRef = useRef(null);
   const rightCanvasRef = useRef(null);
@@ -35,6 +35,8 @@ export default function YearbookViewer({ yearbook }) {
 
   // Load PDF document if type is pdf
   useEffect(() => {
+    setZoomScale(1.0); // Reset zoom on book change
+    
     if (yearbook.type === 'pdf') {
       setLoading(true);
       setCurrentPage(1);
@@ -59,7 +61,7 @@ export default function YearbookViewer({ yearbook }) {
     }
   }, [yearbook]);
 
-  // Render PDF pages on canvas
+  // Render PDF pages on canvas (re-fires when zoomScale changes)
   useEffect(() => {
     if (!pdfDoc || loading) return;
 
@@ -69,7 +71,8 @@ export default function YearbookViewer({ yearbook }) {
       
       pdfDoc.getPage(pageNum).then((page) => {
         const context = canvas.getContext('2d');
-        const viewport = page.getViewport({ scale: 1.5 });
+        // Base scale is 1.25, multiplied by current user zoomScale
+        const viewport = page.getViewport({ scale: 1.25 * zoomScale });
         
         canvas.height = viewport.height;
         canvas.width = viewport.width;
@@ -84,21 +87,18 @@ export default function YearbookViewer({ yearbook }) {
     };
 
     if (isSpread) {
-      // Left Page (Even pages)
       if (currentPage > 1) {
         renderPage(currentPage, leftCanvasRef);
       }
-      // Right Page (Odd pages)
       if (currentPage + 1 <= totalPages) {
         renderPage(currentPage + 1, rightCanvasRef);
       } else if (currentPage === 1) {
-        // Cover is page 1, displayed on the right
         renderPage(1, rightCanvasRef);
       }
     } else {
       renderPage(currentPage, singleCanvasRef);
     }
-  }, [pdfDoc, currentPage, isSpread, loading, totalPages]);
+  }, [pdfDoc, currentPage, isSpread, loading, totalPages, zoomScale]);
 
   const handleNext = () => {
     if (isSpread) {
@@ -140,6 +140,18 @@ export default function YearbookViewer({ yearbook }) {
     }
   };
 
+  const handleZoomIn = () => {
+    setZoomScale(prev => Math.min(prev + 0.25, 2.5));
+  };
+
+  const handleZoomOut = () => {
+    setZoomScale(prev => Math.max(prev - 0.25, 0.75));
+  };
+
+  const handleZoomReset = () => {
+    setZoomScale(1.0);
+  };
+
   // Image helpers for archive books
   const getImageUrl = (pageNum) => {
     return `https://rotaryyearbook.ca/wp-content/uploads/flipbook/${yearbook.id}/files/mobile/${pageNum}.jpg`;
@@ -172,6 +184,8 @@ export default function YearbookViewer({ yearbook }) {
         padding: '16px 24px',
         borderBottom: '1px solid var(--border-color)',
         display: 'flex',
+        flexWrap: 'wrap',
+        gap: '16px',
         justifyContent: 'space-between',
         alignItems: 'center',
         backgroundColor: 'var(--bg-primary)'
@@ -180,6 +194,24 @@ export default function YearbookViewer({ yearbook }) {
           <BookOpen size={18} style={{ color: 'var(--color-accent)' }} />
           <span style={{ fontWeight: '600' }}>{yearbook.title}</span>
         </div>
+
+        {/* Zoom Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--bg-secondary)', padding: '4px 8px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+          <button onClick={handleZoomOut} disabled={zoomScale <= 0.75} className="btn btn-outline" style={{ padding: '4px 8px', border: 'none' }} title="Zoom Out">
+            <ZoomOut size={16} />
+          </button>
+          <span style={{ fontSize: '0.85rem', fontWeight: '600', minWidth: '45px', textAlign: 'center' }}>
+            {Math.round(zoomScale * 100)}%
+          </span>
+          <button onClick={handleZoomIn} disabled={zoomScale >= 2.5} className="btn btn-outline" style={{ padding: '4px 8px', border: 'none' }} title="Zoom In">
+            <ZoomIn size={16} />
+          </button>
+          <button onClick={handleZoomReset} disabled={zoomScale === 1.0} className="btn btn-outline" style={{ padding: '4px 8px', border: 'none' }} title="Reset Zoom">
+            <RotateCcw size={14} />
+          </button>
+        </div>
+
+        {/* Action Controls */}
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           {yearbook.type === 'pdf' && (
             <a href={yearbook.path} download className="btn btn-outline" style={{ padding: '6px 12px', fontSize: '0.85rem' }}>
@@ -192,20 +224,20 @@ export default function YearbookViewer({ yearbook }) {
         </div>
       </div>
 
-      {/* Main Display Area */}
-      <div style={{
+      {/* Main Display Area (Scrollable when zoomed in) */}
+      <div className="viewer-scroll-panel" style={{
         position: 'relative',
+        height: '70vh',
         minHeight: '500px',
-        maxHeight: '80vh',
         backgroundColor: '#1a1d24',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '32px 16px',
-        overflowY: 'auto'
+        alignItems: zoomScale > 1.0 ? 'flex-start' : 'center',
+        justifyContent: zoomScale > 1.0 ? 'flex-start' : 'center',
+        padding: '32px',
+        overflow: 'auto'
       }}>
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', color: 'white' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', color: 'white', margin: 'auto' }}>
             <Loader2 className="animate-spin" size={40} style={{ color: 'var(--color-accent)' }} />
             <span>Loading Yearbook...</span>
           </div>
@@ -215,14 +247,13 @@ export default function YearbookViewer({ yearbook }) {
             gap: '4px',
             alignItems: 'stretch',
             justifyContent: 'center',
-            maxWidth: '100%',
-            height: '100%'
+            margin: 'auto',
+            padding: '20px'
           }}>
             {yearbook.type === 'pdf' ? (
-              // PDF rendering mode
               isSpread ? (
                 <>
-                  {/* Left Page (shown if not on page 1) */}
+                  {/* Left Canvas */}
                   {currentPage > 1 ? (
                     <div style={{
                       backgroundColor: 'white',
@@ -231,10 +262,9 @@ export default function YearbookViewer({ yearbook }) {
                       overflow: 'hidden',
                       display: 'flex'
                     }}>
-                      <canvas ref={leftCanvasRef} style={{ maxWidth: '100%', height: 'auto', maxHeight: '70vh' }} />
+                      <canvas ref={leftCanvasRef} style={{ height: 'auto', display: 'block' }} />
                     </div>
                   ) : (
-                    // Blank page dummy to align Cover to the right
                     <div style={{
                       width: '45%',
                       visibility: 'hidden'
@@ -248,7 +278,7 @@ export default function YearbookViewer({ yearbook }) {
                     zIndex: 10
                   }} />
 
-                  {/* Right Page */}
+                  {/* Right Canvas */}
                   <div style={{
                     backgroundColor: 'white',
                     boxShadow: '10px 10px 20px rgba(0,0,0,0.3)',
@@ -256,7 +286,7 @@ export default function YearbookViewer({ yearbook }) {
                     overflow: 'hidden',
                     display: 'flex'
                   }}>
-                    <canvas ref={rightCanvasRef} style={{ maxWidth: '100%', height: 'auto', maxHeight: '70vh' }} />
+                    <canvas ref={rightCanvasRef} style={{ height: 'auto', display: 'block' }} />
                   </div>
                 </>
               ) : (
@@ -268,7 +298,7 @@ export default function YearbookViewer({ yearbook }) {
                   overflow: 'hidden',
                   display: 'flex'
                 }}>
-                  <canvas ref={singleCanvasRef} style={{ maxWidth: '100%', height: 'auto', maxHeight: '70vh' }} />
+                  <canvas ref={singleCanvasRef} style={{ height: 'auto', display: 'block' }} />
                 </div>
               )
             ) : (
@@ -283,12 +313,19 @@ export default function YearbookViewer({ yearbook }) {
                       borderRadius: '4px 0 0 4px',
                       overflow: 'hidden',
                       display: 'flex',
-                      maxHeight: '70vh'
+                      alignItems: 'center'
                     }}>
                       <img
                         src={getImageUrl(currentPage)}
                         alt={`Page ${currentPage}`}
-                        style={{ width: 'auto', height: '100%', maxWidth: '45vw', objectFit: 'contain' }}
+                        style={{
+                          width: 'auto',
+                          height: 'auto',
+                          maxWidth: `${45 * zoomScale}vw`,
+                          maxHeight: `${70 * zoomScale}vh`,
+                          objectFit: 'contain',
+                          transition: 'max-width 0.2s ease, max-height 0.2s ease'
+                        }}
                       />
                     </div>
                   ) : (
@@ -309,12 +346,19 @@ export default function YearbookViewer({ yearbook }) {
                     borderRadius: currentPage === 1 ? '4px 12px 12px 4px' : '0 4px 4px 0',
                     overflow: 'hidden',
                     display: 'flex',
-                    maxHeight: '70vh'
+                    alignItems: 'center'
                   }}>
                     <img
                       src={getImageUrl(currentPage === 1 ? 1 : currentPage + 1)}
                       alt={`Page ${currentPage === 1 ? 1 : currentPage + 1}`}
-                      style={{ width: 'auto', height: '100%', maxWidth: '45vw', objectFit: 'contain' }}
+                      style={{
+                        width: 'auto',
+                        height: 'auto',
+                        maxWidth: `${45 * zoomScale}vw`,
+                        maxHeight: `${70 * zoomScale}vh`,
+                        objectFit: 'contain',
+                        transition: 'max-width 0.2s ease, max-height 0.2s ease'
+                      }}
                     />
                   </div>
                 </>
@@ -326,12 +370,19 @@ export default function YearbookViewer({ yearbook }) {
                   borderRadius: '8px',
                   overflow: 'hidden',
                   display: 'flex',
-                  maxHeight: '70vh'
+                  alignItems: 'center'
                 }}>
                   <img
                     src={getImageUrl(currentPage)}
                     alt={`Page ${currentPage}`}
-                    style={{ width: '100%', height: 'auto', maxWidth: '90vw', objectFit: 'contain' }}
+                    style={{
+                      width: 'auto',
+                      height: 'auto',
+                      maxWidth: `${90 * zoomScale}vw`,
+                      maxHeight: `${70 * zoomScale}vh`,
+                      objectFit: 'contain',
+                      transition: 'max-width 0.2s ease, max-height 0.2s ease'
+                    }}
                   />
                 </div>
               )

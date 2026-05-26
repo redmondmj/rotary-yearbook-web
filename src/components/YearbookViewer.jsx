@@ -14,6 +14,7 @@ export default function YearbookViewer({ yearbook }) {
   const rightCanvasRef = useRef(null);
   const singleCanvasRef = useRef(null);
   const containerRef = useRef(null);
+  const activeRenderTasksRef = useRef({ left: null, right: null, single: null });
 
   // Check window size to toggle spread mode on mobile
   useEffect(() => {
@@ -38,7 +39,13 @@ export default function YearbookViewer({ yearbook }) {
       setLoading(true);
       setCurrentPage(1);
       
-      const loadingTask = pdfjsLib.getDocument(yearbook.path);
+      const loadingTask = pdfjsLib.getDocument({
+        url: yearbook.path,
+        wasmUrl: 'https://unpkg.com/pdfjs-dist@5.7.284/wasm/',
+        cMapUrl: 'https://unpkg.com/pdfjs-dist@5.7.284/cmaps/',
+        cMapPacked: true,
+        standardFontDataUrl: 'https://unpkg.com/pdfjs-dist@5.7.284/standard_fonts/',
+      });
       loadingTask.promise.then(
         (pdf) => {
           setPdfDoc(pdf);
@@ -62,10 +69,16 @@ export default function YearbookViewer({ yearbook }) {
   useEffect(() => {
     if (!pdfDoc || loading) return;
 
-    const renderPage = (pageNum, canvasRef) => {
+    const renderPage = (pageNum, canvasRef, key) => {
       const canvas = canvasRef.current;
       if (!canvas) return;
       
+      // Cancel any active render task for this canvas key
+      if (activeRenderTasksRef.current[key]) {
+        activeRenderTasksRef.current[key].cancel();
+        activeRenderTasksRef.current[key] = null;
+      }
+
       pdfDoc.getPage(pageNum).then((page) => {
         const context = canvas.getContext('2d');
         // Base scale is 1.25, multiplied by current user zoomScale
@@ -73,33 +86,81 @@ export default function YearbookViewer({ yearbook }) {
         
         canvas.height = viewport.height;
         canvas.width = viewport.width;
+        canvas.style.width = `${viewport.width}px`;
+        canvas.style.height = `${viewport.height}px`;
         
         const renderContext = {
           canvasContext: context,
           viewport: viewport
         };
         
-        page.render(renderContext);
+        const renderTask = page.render(renderContext);
+        activeRenderTasksRef.current[key] = renderTask;
+
+        renderTask.promise.then(
+          () => {
+            activeRenderTasksRef.current[key] = null;
+          },
+          (error) => {
+            if (error && error.name !== 'RenderingCancelledException') {
+              console.error(`Error rendering page ${pageNum}:`, error);
+            }
+          }
+        );
+      }).catch((error) => {
+        console.error(`Error getting page ${pageNum}:`, error);
       });
     };
 
     if (isSpread) {
       if (currentPage === 1) {
         // Render Cover (Page 1) on the right side
-        renderPage(1, rightCanvasRef);
+        renderPage(1, rightCanvasRef, 'right');
       } else {
         // Render Left Page
-        renderPage(currentPage, leftCanvasRef);
+        renderPage(currentPage, leftCanvasRef, 'left');
         
         // Render Right Page (if it exists)
         if (currentPage + 1 <= totalPages) {
-          renderPage(currentPage + 1, rightCanvasRef);
+          renderPage(currentPage + 1, rightCanvasRef, 'right');
         }
       }
     } else {
-      renderPage(currentPage, singleCanvasRef);
+      renderPage(currentPage, singleCanvasRef, 'single');
     }
+
+    // Cleanup active tasks when page/spread/zoom changes
+    return () => {
+      if (activeRenderTasksRef.current.left) activeRenderTasksRef.current.left.cancel();
+      if (activeRenderTasksRef.current.right) activeRenderTasksRef.current.right.cancel();
+      if (activeRenderTasksRef.current.single) activeRenderTasksRef.current.single.cancel();
+      activeRenderTasksRef.current = { left: null, right: null, single: null };
+    };
   }, [pdfDoc, currentPage, isSpread, loading, totalPages, zoomScale]);
+
+  // Calculate fit-to-width zoom scale on load and when spread mode changes
+  useEffect(() => {
+    if (!pdfDoc || loading) return;
+    
+    const calculateFitScale = () => {
+      const container = containerRef.current;
+      if (!container) return;
+      
+      const containerWidth = container.clientWidth;
+      const availableWidth = containerWidth - 80;
+      const targetWidth = isSpread ? 1530 : 765;
+      
+      if (availableWidth < targetWidth) {
+        const fitScale = Math.max(0.5, Math.floor((availableWidth / targetWidth) * 10) / 10);
+        setZoomScale(fitScale);
+      } else {
+        setZoomScale(1.0);
+      }
+    };
+
+    const timer = setTimeout(calculateFitScale, 100);
+    return () => clearTimeout(timer);
+  }, [pdfDoc, isSpread, loading]);
 
   const handleNext = () => {
     if (isSpread) {
@@ -231,9 +292,9 @@ export default function YearbookViewer({ yearbook }) {
         height: '70vh',
         minHeight: '500px',
         backgroundColor: '#1a1d24',
-        display: 'flex',
         padding: '32px',
-        overflow: 'auto'
+        overflow: 'auto',
+        display: 'flex'
       }}>
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', color: 'white', margin: 'auto' }}>
@@ -241,14 +302,20 @@ export default function YearbookViewer({ yearbook }) {
             <span>Loading Yearbook...</span>
           </div>
         ) : (
-          <div className="book-spread" style={{
+          <div style={{
             display: 'flex',
-            gap: '4px',
-            alignItems: 'center',
-            justifyContent: 'center',
             margin: 'auto',
-            padding: '20px'
+            flexShrink: 0,
+            alignSelf: 'flex-start'
           }}>
+            <div className="book-spread" style={{
+              display: 'flex',
+              gap: '4px',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              padding: '20px'
+            }}>
             {yearbook.type === 'pdf' ? (
               isSpread ? (
                 <>
@@ -259,14 +326,17 @@ export default function YearbookViewer({ yearbook }) {
                       boxShadow: '-10px 10px 20px rgba(0,0,0,0.3)',
                       borderRadius: '4px 0 0 4px',
                       overflow: 'hidden',
-                      display: 'flex'
+                      display: 'flex',
+                      flexShrink: 0
                     }}>
-                      <canvas ref={leftCanvasRef} style={{ height: 'auto', display: 'block' }} />
+                      <canvas ref={leftCanvasRef} style={{ display: 'block' }} />
                     </div>
                   ) : (
                     <div style={{
-                      width: '45%',
-                      visibility: 'hidden'
+                      width: `${612 * 1.25 * zoomScale}px`,
+                      height: `${792 * 1.25 * zoomScale}px`,
+                      visibility: 'hidden',
+                      flexShrink: 0
                     }} />
                   )}
 
@@ -274,7 +344,9 @@ export default function YearbookViewer({ yearbook }) {
                   <div style={{
                     width: '2px',
                     background: 'linear-gradient(90deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 100%)',
-                    zIndex: 10
+                    zIndex: 10,
+                    alignSelf: 'stretch',
+                    flexShrink: 0
                   }} />
 
                   {/* Right Canvas */}
@@ -283,9 +355,10 @@ export default function YearbookViewer({ yearbook }) {
                     boxShadow: '10px 10px 20px rgba(0,0,0,0.3)',
                     borderRadius: currentPage === 1 ? '4px 12px 12px 4px' : '0 4px 4px 0',
                     overflow: 'hidden',
-                    display: 'flex'
+                    display: 'flex',
+                    flexShrink: 0
                   }}>
-                    <canvas ref={rightCanvasRef} style={{ height: 'auto', display: 'block' }} />
+                    <canvas ref={rightCanvasRef} style={{ display: 'block' }} />
                   </div>
                 </>
               ) : (
@@ -295,9 +368,10 @@ export default function YearbookViewer({ yearbook }) {
                   boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
                   borderRadius: '8px',
                   overflow: 'hidden',
-                  display: 'flex'
+                  display: 'flex',
+                  flexShrink: 0
                 }}>
-                  <canvas ref={singleCanvasRef} style={{ height: 'auto', display: 'block' }} />
+                  <canvas ref={singleCanvasRef} style={{ display: 'block' }} />
                 </div>
               )
             ) : (
@@ -312,7 +386,8 @@ export default function YearbookViewer({ yearbook }) {
                       borderRadius: '4px 0 0 4px',
                       overflow: 'hidden',
                       display: 'flex',
-                      alignItems: 'center'
+                      alignItems: 'center',
+                      flexShrink: 0
                     }}>
                       <img
                         src={getImageUrl(currentPage)}
@@ -328,7 +403,7 @@ export default function YearbookViewer({ yearbook }) {
                       />
                     </div>
                   ) : (
-                    <div style={{ width: '45vw', visibility: 'hidden' }} />
+                    <div style={{ width: '45vw', visibility: 'hidden', flexShrink: 0 }} />
                   )}
 
                   {/* Divider line */}
@@ -345,7 +420,8 @@ export default function YearbookViewer({ yearbook }) {
                     borderRadius: currentPage === 1 ? '4px 12px 12px 4px' : '0 4px 4px 0',
                     overflow: 'hidden',
                     display: 'flex',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    flexShrink: 0
                   }}>
                     <img
                       src={getImageUrl(currentPage === 1 ? 1 : currentPage + 1)}
@@ -369,7 +445,8 @@ export default function YearbookViewer({ yearbook }) {
                   borderRadius: '8px',
                   overflow: 'hidden',
                   display: 'flex',
-                  alignItems: 'center'
+                  alignItems: 'center',
+                  flexShrink: 0
                 }}>
                   <img
                     src={getImageUrl(currentPage)}
@@ -386,6 +463,7 @@ export default function YearbookViewer({ yearbook }) {
                 </div>
               )
             )}
+            </div>
           </div>
         )}
       </div>

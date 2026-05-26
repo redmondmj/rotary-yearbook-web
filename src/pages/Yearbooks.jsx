@@ -15,8 +15,14 @@ function PdfCoverPreview({ url }) {
 
     let isMounted = true;
 
-    // Load PDF
-    pdfjsLib.getDocument(url).promise.then(
+    // Load PDF with explicit WASM decoding configuration
+    pdfjsLib.getDocument({
+      url: url,
+      wasmUrl: 'https://unpkg.com/pdfjs-dist@5.7.284/wasm/',
+      cMapUrl: 'https://unpkg.com/pdfjs-dist@5.7.284/cmaps/',
+      cMapPacked: true,
+      standardFontDataUrl: 'https://unpkg.com/pdfjs-dist@5.7.284/standard_fonts/',
+    }).promise.then(
       (pdf) => {
         if (!isMounted) return;
         

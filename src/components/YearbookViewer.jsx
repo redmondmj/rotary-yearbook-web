@@ -84,13 +84,17 @@ export default function YearbookViewer({ yearbook }) {
     };
 
     if (isSpread) {
-      if (currentPage > 1) {
-        renderPage(currentPage, leftCanvasRef);
-      }
-      if (currentPage + 1 <= totalPages) {
-        renderPage(currentPage + 1, rightCanvasRef);
-      } else if (currentPage === 1) {
+      if (currentPage === 1) {
+        // Render Cover (Page 1) on the right side
         renderPage(1, rightCanvasRef);
+      } else {
+        // Render Left Page
+        renderPage(currentPage, leftCanvasRef);
+        
+        // Render Right Page (if it exists)
+        if (currentPage + 1 <= totalPages) {
+          renderPage(currentPage + 1, rightCanvasRef);
+        }
       }
     } else {
       renderPage(currentPage, singleCanvasRef);
@@ -228,8 +232,6 @@ export default function YearbookViewer({ yearbook }) {
         minHeight: '500px',
         backgroundColor: '#1a1d24',
         display: 'flex',
-        alignItems: zoomScale > 1.0 ? 'flex-start' : 'center',
-        justifyContent: zoomScale > 1.0 ? 'flex-start' : 'center',
         padding: '32px',
         overflow: 'auto'
       }}>
@@ -242,7 +244,7 @@ export default function YearbookViewer({ yearbook }) {
           <div className="book-spread" style={{
             display: 'flex',
             gap: '4px',
-            alignItems: 'stretch',
+            alignItems: 'center',
             justifyContent: 'center',
             margin: 'auto',
             padding: '20px'

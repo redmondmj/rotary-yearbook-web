@@ -4,9 +4,9 @@ import './index.css'
 import App from './App.jsx'
 
 import * as pdfjsLib from 'pdfjs-dist';
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+// Use the exact matching unpkg CDN worker URL to avoid Vite worker bundling issues in dev mode
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@5.7.284/build/pdf.worker.min.mjs';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

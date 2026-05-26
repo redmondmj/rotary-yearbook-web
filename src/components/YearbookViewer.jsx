@@ -2,9 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { ChevronLeft, ChevronRight, Maximize2, FileText, Loader2, BookOpen, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
-// Set up the PDF.js worker using a standard CDN version.
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js`;
-
 export default function YearbookViewer({ yearbook }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(yearbook.pages || 0);

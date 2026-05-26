@@ -1,12 +1,86 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { yearbooksData } from '../data/yearbooks';
-import { BookOpen, Calendar, Layers } from 'lucide-react';
+import { BookOpen, Calendar, Layers, Loader2 } from 'lucide-react';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Helper component to render the first page of a PDF as the cover image
+function PdfCoverPreview({ url }) {
+  const canvasRef = useRef(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    let isMounted = true;
+
+    // Load PDF
+    pdfjsLib.getDocument(url).promise.then(
+      (pdf) => {
+        if (!isMounted) return;
+        
+        // Fetch first page
+        pdf.getPage(1).then((page) => {
+          if (!isMounted) return;
+          
+          const context = canvas.getContext('2d');
+          // Scale 0.35 is perfect to fit the 240px container height
+          const viewport = page.getViewport({ scale: 0.35 });
+          
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+          
+          const renderContext = {
+            canvasContext: context,
+            viewport: viewport
+          };
+          
+          page.render(renderContext).promise.then(() => {
+            if (isMounted) setLoading(false);
+          });
+        });
+      },
+      (err) => {
+        console.error('Error loading PDF page 1 for cover preview:', err);
+        if (isMounted) setLoading(false);
+      }
+    );
+
+    return () => {
+      isMounted = false;
+    };
+  }, [url]);
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%', position: 'relative' }}>
+      {loading && (
+        <div style={{ position: 'absolute', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)' }}>
+          <Loader2 className="animate-spin" size={18} style={{ color: 'var(--color-accent)' }} />
+          <span style={{ fontSize: '0.8rem' }}>Loading Cover...</span>
+        </div>
+      )}
+      <canvas
+        ref={canvasRef}
+        style={{
+          height: '90%',
+          width: 'auto',
+          maxHeight: '216px', // 90% of the 240px container height
+          borderRadius: '4px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          transition: 'transform 0.3s ease',
+          opacity: loading ? 0 : 1,
+          display: loading ? 'none' : 'block'
+        }}
+        className="cover-img"
+      />
+    </div>
+  );
+}
 
 export default function Yearbooks() {
   const getCoverUrl = (book) => {
     if (book.type === 'pdf') {
-      // Return a nice placeholder or style it locally
       return null;
     }
     return `https://rotaryyearbook.ca/wp-content/uploads/flipbook/${book.id}/files/mobile/1.jpg`;
@@ -39,7 +113,9 @@ export default function Yearbooks() {
                 justifyContent: 'center',
                 borderBottom: '1px solid var(--border-color)'
               }}>
-                {cover ? (
+                {book.type === 'pdf' ? (
+                  <PdfCoverPreview url={book.path} />
+                ) : (
                   <img 
                     src={cover} 
                     alt={`${book.title} Cover`}
@@ -53,33 +129,6 @@ export default function Yearbooks() {
                     }}
                     className="cover-img"
                   />
-                ) : (
-                  /* Custom 2026 Cover fallback */
-                  <div style={{
-                    width: '150px',
-                    height: '210px',
-                    backgroundColor: 'var(--color-primary)',
-                    borderRadius: '4px 12px 12px 4px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    padding: '16px',
-                    color: 'white',
-                    border: '1px solid rgba(255,255,255,0.1)'
-                  }}>
-                    <div style={{ borderBottom: '1px solid var(--color-accent)', paddingBottom: '6px' }}>
-                      <div style={{ fontSize: '0.65rem', opacity: 0.8 }}>ROTARY CLUB</div>
-                      <div style={{ fontSize: '1rem', fontWeight: '800' }}>YEARBOOK</div>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                      <BookOpen size={28} style={{ color: 'var(--color-accent)' }} />
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', fontSize: '0.7rem' }}>
-                      <span style={{ opacity: 0.7 }}>PROOF</span>
-                      <span style={{ fontWeight: '800', color: 'var(--color-accent)', fontSize: '1rem' }}>{book.year}</span>
-                    </div>
-                  </div>
                 )}
                 
                 {book.isLatest && (
@@ -93,7 +142,8 @@ export default function Yearbooks() {
                     fontWeight: '700',
                     padding: '4px 10px',
                     borderRadius: '50px',
-                    boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                    zIndex: 10
                   }}>
                     NEW EDITION
                   </span>

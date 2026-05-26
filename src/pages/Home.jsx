@@ -133,7 +133,7 @@ export default function Home() {
           <div style={{ color: 'var(--color-accent)', fontWeight: '600', fontSize: '0.9rem', letterSpacing: '1px', textTransform: 'uppercase' }}>
             Featured Publication
           </div>
-          <h2>2026 Digital Yearbook (Proof)</h2>
+          <h2>2026 Digital Yearbook</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem' }}>
             Explore our latest volume online. Our 2026 Yearbook highlights a banner year of community support, local directory listings, and memorable pictures from around our area.
           </p>

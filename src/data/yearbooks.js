@@ -2,7 +2,7 @@ export const yearbooksData = [
   {
     id: '50',
     year: 2026,
-    title: '2026 Yearbook (Proof)',
+    title: '2026 Yearbook',
     pages: null, // Loaded dynamically via PDF.js
     type: 'pdf',
     path: '/yearbooks/2026.pdf',

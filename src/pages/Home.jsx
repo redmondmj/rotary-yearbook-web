@@ -29,7 +29,7 @@ export default function Home() {
           <Sparkles size={14} /> Celebrating 100 Years of Community Impact
         </div>
         <h1 style={{ maxWidth: '800px', margin: '0 auto' }}>
-          Supporting Our Community Through <span className="text-gradient">Rotary Yearbooks</span>
+          Supporting Our Community Through the <span className="text-gradient">Rotary Community Yearbook</span>
         </h1>
         <p style={{
           fontSize: '1.2rem',

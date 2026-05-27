@@ -1,16 +1,54 @@
-# React + Vite
+# Rotary Club Yearbook Web Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React and Vite application for browsing the digital yearbook archives, viewing the sponsors directory, and submitting contact inquiries for the Rotary Club of Truro.
 
-Currently, two official plugins are available:
+## Development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+To start a local development server:
+```bash
+npm install
+npm run dev
+```
 
-## React Compiler
+To run linter checks:
+```bash
+npm run lint
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+To compile production assets:
+```bash
+npm run build
+```
+This builds static assets into the `dist/` directory.
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Deployment
+
+The application is deployed as a static site served via Nginx on a Bitnami stack instance.
+
+### Prerequisites
+Make sure your SSH config (`~/.ssh/config`) contains the alias for the target server:
+```text
+Host nginx
+  HostName 99.79.153.223
+  User bitnami
+  IdentityFile ~/.ssh/NGINX-General.pem
+```
+
+### Deploy Steps
+
+1. **Verify code quality:**
+   ```bash
+   npm run lint
+   ```
+2. **Build the production assets:**
+   ```bash
+   npm run build
+   ```
+3. **Upload the static assets to the Nginx server:**
+   ```bash
+   scp -r dist/assets dist/favicon.svg dist/icons.svg dist/index.html dist/yearbooks nginx:/opt/bitnami/apps/rotary-yearbook-wp/htdocs/
+   ```
+
+*Note: Changes to static assets take effect immediately on Nginx; no server reload or service restart is required.*

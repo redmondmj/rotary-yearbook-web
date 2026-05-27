@@ -50,5 +50,10 @@ Host nginx
    ```bash
    scp -r dist/assets dist/favicon.svg dist/icons.svg dist/index.html dist/yearbooks nginx:/opt/bitnami/apps/rotary-yearbook-wp/htdocs/
    ```
+4. **Fix permissions on the server:**
+   Ensure Nginx has read and execute access to the newly uploaded directories:
+   ```bash
+   ssh nginx "chmod 755 /opt/bitnami/apps/rotary-yearbook-wp/htdocs/assets /opt/bitnami/apps/rotary-yearbook-wp/htdocs/yearbooks"
+   ```
 
 *Note: Changes to static assets take effect immediately on Nginx; no server reload or service restart is required.*

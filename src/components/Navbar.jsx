@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { BookOpen, Menu, X, Award } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
+import logo from '../assets/logo.png';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,9 +11,8 @@ export default function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <NavLink to="/" className="nav-brand">
-          <BookOpen className="icon" size={24} style={{ color: 'var(--color-accent)' }} />
-          <span>Rotary</span>Yearbook
+        <NavLink to="/" className="nav-brand" style={{ display: 'flex', alignItems: 'center', padding: '5px 0' }}>
+          <img src={logo} alt="Rotary Club of Truro Logo" style={{ height: '44px', width: 'auto', display: 'block' }} />
         </NavLink>
 
         {/* Desktop Menu */}

@@ -289,8 +289,8 @@ export default function YearbookViewer({ yearbook }) {
       {/* Main Display Area (Scrollable when zoomed in) */}
       <div className="viewer-scroll-panel" style={{
         position: 'relative',
-        height: '70vh',
-        minHeight: '500px',
+        height: '80vh',
+        minHeight: '650px',
         backgroundColor: '#1a1d24',
         padding: '32px',
         overflow: 'auto',

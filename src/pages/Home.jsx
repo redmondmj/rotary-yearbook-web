@@ -27,7 +27,7 @@ export default function Home() {
           fontWeight: '600',
           fontSize: '0.9rem'
         }}>
-          <Sparkles size={14} /> Celebrating Over 70 Years of Service
+          <Sparkles size={14} /> Celebrating 100 Years of Community Impact
         </div>
         <h1 style={{ maxWidth: '800px', margin: '0 auto' }}>
           Supporting Our Community Through <span className="text-gradient">Rotary Yearbooks</span>
@@ -41,11 +41,11 @@ export default function Home() {
           Every ad purchased and yearbook shared helps fund local community service projects, youth leadership initiatives, and critical community accessibility enhancements.
         </p>
         <div style={{ display: 'flex', gap: '16px', marginTop: '12px' }}>
-          <Link to="/yearbooks" className="btn btn-accent">
-            Browse Archives <BookOpen size={16} />
+          <Link to="/yearbooks/50" className="btn btn-accent glow-effect">
+            Read 2026 Yearbook <BookOpen size={16} />
           </Link>
-          <Link to="/sponsors" className="btn btn-outline">
-            Become a Sponsor <ArrowRight size={16} />
+          <Link to="/yearbooks" className="btn btn-outline">
+            Browse Archives <ArrowRight size={16} />
           </Link>
         </div>
       </section>
@@ -70,10 +70,10 @@ export default function Home() {
           }}>
             <Star size={24} />
           </div>
-          <h3 style={{ fontSize: '2.5rem', fontWeight: '800' }}>1953</h3>
+          <h3 style={{ fontSize: '2.5rem', fontWeight: '800' }}>1926</h3>
           <h4 style={{ fontWeight: '600', fontSize: '1rem', color: 'var(--text-primary)' }}>Year Established</h4>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-            Decades of continuous publishing and backing civic programs.
+            Celebrating a century of community support and backing civic programs in Truro.
           </p>
         </div>
 
@@ -112,10 +112,10 @@ export default function Home() {
           }}>
             <BookOpen size={24} />
           </div>
-          <h3 style={{ fontSize: '2.5rem', fontWeight: '800' }}>12+</h3>
-          <h4 style={{ fontWeight: '600', fontSize: '1rem', color: 'var(--text-primary)' }}>Digital Archives</h4>
+          <h3 style={{ fontSize: '2.5rem', fontWeight: '800' }}>23rd</h3>
+          <h4 style={{ fontWeight: '600', fontSize: '1rem', color: 'var(--text-primary)' }}>Yearbook Edition</h4>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-            Instantly view online digital yearbook copies dating back to 2014.
+            Proudly celebrating the 23rd publication edition of our community yearbook.
           </p>
         </div>
       </section>

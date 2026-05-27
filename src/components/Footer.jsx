@@ -1,15 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Shield, BookOpen } from 'lucide-react';
+import { Mail, Shield } from 'lucide-react';
+import logo from '../assets/logo.png';
 
 export default function Footer() {
   return (
     <footer className="footer">
       <div className="footer-container">
-        <div className="footer-brand">
-          <h3><span>Rotary</span> Yearbook</h3>
+        <div className="footer-brand" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <img src={logo} alt="Rotary Club of Truro Logo" style={{ height: '40px', width: 'auto', alignSelf: 'flex-start', display: 'block' }} />
           <p>
-            Supporting local service projects, youth initiatives, and accessibility enhancements in our community since 1953.
+            Supporting local service projects, youth initiatives, and accessibility enhancements in our community since 1926.
           </p>
         </div>
         <div className="footer-links">

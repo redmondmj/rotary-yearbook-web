@@ -1,17 +1,43 @@
-import React, { useState } from 'react';
-import { Mail, MessageSquare, Shield, HelpCircle, Send } from 'lucide-react';
+import { useState } from 'react';
+import { Mail, Shield, Send } from 'lucide-react';
 
 export default function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', subject: 'Advertising', message: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulate API call
-    setTimeout(() => {
-      setSubmitted(true);
-      setFormData({ name: '', email: '', subject: 'Advertising', message: '' });
-    }, 500);
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const response = await fetch("https://formsubmit.co/ajax/info@rotaryyearbook.ca", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message
+        })
+      });
+      
+      const data = await response.json();
+      if (response.ok && (data.success === "true" || data.success === true)) {
+        setSubmitted(true);
+        setFormData({ name: '', email: '', subject: 'Advertising', message: '' });
+      } else {
+        throw new Error(data.message || "Failed to send message. Please try again.");
+      }
+    } catch (err) {
+      setError(err.message || "An unexpected error occurred. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -198,9 +224,25 @@ export default function Contact() {
                 />
               </div>
 
-              <button type="submit" className="btn btn-accent glow-effect" style={{ marginTop: '8px', alignSelf: 'flex-start' }}>
-                Submit Message <Send size={16} />
-              </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                <button 
+                  type="submit" 
+                  className="btn btn-accent glow-effect" 
+                  style={{ 
+                    alignSelf: 'flex-start',
+                    opacity: isSubmitting ? 0.7 : 1,
+                    pointerEvents: isSubmitting ? 'none' : 'auto'
+                  }} 
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Sending...' : 'Submit Message'} <Send size={16} />
+                </button>
+                {error && (
+                  <div style={{ color: '#ff4d4d', fontSize: '0.9rem', fontWeight: '500' }}>
+                    {error}
+                  </div>
+                )}
+              </div>
             </form>
           )}
         </div>

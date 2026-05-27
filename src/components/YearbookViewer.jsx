@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { ChevronLeft, ChevronRight, Maximize2, FileText, Loader2, BookOpen, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
@@ -9,6 +9,20 @@ export default function YearbookViewer({ yearbook }) {
   const [loading, setLoading] = useState(true);
   const [pdfDoc, setPdfDoc] = useState(null);
   const [zoomScale, setZoomScale] = useState(1.0);
+  const [prevYearbookId, setPrevYearbookId] = useState(yearbook.id);
+
+  if (yearbook.id !== prevYearbookId) {
+    setPrevYearbookId(yearbook.id);
+    setZoomScale(1.0);
+    setCurrentPage(1);
+    if (yearbook.type === 'pdf') {
+      setLoading(true);
+    } else {
+      setPdfDoc(null);
+      setTotalPages(yearbook.pages);
+      setLoading(false);
+    }
+  }
   
   const leftCanvasRef = useRef(null);
   const rightCanvasRef = useRef(null);
@@ -33,36 +47,26 @@ export default function YearbookViewer({ yearbook }) {
 
   // Load PDF document if type is pdf
   useEffect(() => {
-    setZoomScale(1.0); // Reset zoom on book change
-    
-    if (yearbook.type === 'pdf') {
-      setLoading(true);
-      setCurrentPage(1);
-      
-      const loadingTask = pdfjsLib.getDocument({
-        url: yearbook.path,
-        wasmUrl: 'https://unpkg.com/pdfjs-dist@5.7.284/wasm/',
-        cMapUrl: 'https://unpkg.com/pdfjs-dist@5.7.284/cmaps/',
-        cMapPacked: true,
-        standardFontDataUrl: 'https://unpkg.com/pdfjs-dist@5.7.284/standard_fonts/',
-      });
-      loadingTask.promise.then(
-        (pdf) => {
-          setPdfDoc(pdf);
-          setTotalPages(pdf.numPages);
-          setLoading(false);
-        },
-        (error) => {
-          console.error('Error loading PDF: ', error);
-          setLoading(false);
-        }
-      );
-    } else {
-      setPdfDoc(null);
-      setTotalPages(yearbook.pages);
-      setCurrentPage(1);
-      setLoading(false);
-    }
+    if (yearbook.type !== 'pdf') return;
+
+    const loadingTask = pdfjsLib.getDocument({
+      url: yearbook.path,
+      wasmUrl: 'https://unpkg.com/pdfjs-dist@5.7.284/wasm/',
+      cMapUrl: 'https://unpkg.com/pdfjs-dist@5.7.284/cmaps/',
+      cMapPacked: true,
+      standardFontDataUrl: 'https://unpkg.com/pdfjs-dist@5.7.284/standard_fonts/',
+    });
+    loadingTask.promise.then(
+      (pdf) => {
+        setPdfDoc(pdf);
+        setTotalPages(pdf.numPages);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Error loading PDF: ', error);
+        setLoading(false);
+      }
+    );
   }, [yearbook]);
 
   // Render PDF pages on canvas (re-fires when zoomScale changes)

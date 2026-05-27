@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import logo from '../assets/logo.png';
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggleMenu = () => setIsOpen(!isOpen);
+  const [isOpen] = useState(false);
 
   return (
     <nav className="navbar">
@@ -29,6 +27,14 @@ export default function Navbar() {
           <NavLink to="/contact" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             Contact
           </NavLink>
+          <a 
+            href="https://rotarycluboftruro.ca/" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="nav-link"
+          >
+            Club Site
+          </a>
         </div>
 
         {/* Mobile Menu Icon */}

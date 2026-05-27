@@ -1,6 +1,5 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Shield } from 'lucide-react';
+import { Shield } from 'lucide-react';
 import logo from '../assets/logo.png';
 
 export default function Footer() {
@@ -20,6 +19,7 @@ export default function Footer() {
             <li><Link to="/yearbooks">Yearbook Archives</Link></li>
             <li><Link to="/sponsors">Sponsors Directory</Link></li>
             <li><Link to="/contact">Get in Touch</Link></li>
+            <li><a href="https://rotarycluboftruro.ca/" target="_blank" rel="noopener noreferrer">Rotary Club of Truro</a></li>
           </ul>
         </div>
         <div className="footer-contact">
@@ -29,7 +29,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="footer-bottom">
-        <p>&copy; {new Date().getFullYear()} Rotary Club. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} <a href="https://rotarycluboftruro.ca/" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>Rotary Club of Truro</a>. All rights reserved.</p>
         <p style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <Shield size={14} /> Local Community Support Project
         </p>

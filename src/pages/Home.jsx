@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, Sparkles, Star, Users, ArrowRight } from 'lucide-react';
 

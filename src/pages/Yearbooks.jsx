@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { yearbooksData } from '../data/yearbooks';
-import { BookOpen, Calendar, Layers, Loader2 } from 'lucide-react';
+import { Calendar, Layers, Loader2 } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Helper component to render the first page of a PDF as the cover image

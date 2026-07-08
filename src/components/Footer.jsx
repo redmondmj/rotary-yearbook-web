@@ -7,7 +7,7 @@ export default function Footer() {
     <footer className="footer">
       <div className="footer-container">
         <div className="footer-brand" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <img src={logo} alt="Rotary Club of Truro Logo" style={{ height: '40px', width: 'auto', alignSelf: 'flex-start', display: 'block' }} />
+          <img src={logo} alt="Rotary Club of Truro Logo" className="nav-logo" style={{ height: '40px', width: 'auto', alignSelf: 'flex-start', display: 'block' }} />
           <p>
             Supporting local service projects, youth initiatives, and accessibility enhancements in our community since 1926.
           </p>

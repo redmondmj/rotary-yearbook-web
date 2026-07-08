@@ -10,7 +10,7 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="navbar-container">
         <NavLink to="/" className="nav-brand" style={{ display: 'flex', alignItems: 'center', padding: '5px 0' }}>
-          <img src={logo} alt="Rotary Club of Truro Logo" style={{ height: '44px', width: 'auto', display: 'block' }} />
+          <img src={logo} alt="Rotary Club of Truro Logo" className="nav-logo" style={{ height: '44px', width: 'auto', display: 'block' }} />
         </NavLink>
 
         {/* Desktop Menu */}

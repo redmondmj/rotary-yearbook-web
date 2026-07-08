@@ -403,3 +403,16 @@ h3 {
 .glow-effect:hover::after {
   opacity: 0.15;
 }
+
+/* Logo Styling for Light & Dark Modes */
+.nav-logo {
+  mix-blend-mode: multiply;
+  transition: var(--transition-smooth);
+}
+
+@media (prefers-color-scheme: dark) {
+  .nav-logo {
+    filter: invert(1) brightness(1.2) contrast(1.1);
+    mix-blend-mode: screen;
+  }
+}
